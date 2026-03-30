@@ -1,15 +1,8 @@
 (config
- (text-field
-  :name        "user_id"
-  :label       "User ID"
-  :placeholder "Enter user Id"
-  :required    true
- )
-  
  (password-field
-  :name        "api_key"
-  :label       "API Key"
-  :placeholder "Enter your 7 Shift API Key"
+  :name        "bearertoken"
+  :label       "Access token"
+  :placeholder "Enter your 7 Shift access token"
   :required    true
   :description  "This text is shown below the password field"))
 
@@ -17,14 +10,10 @@
 (default-source
     (http/get :base-url "https://developers.7shifts.com"
                           (header-params 
-                          "Authorization: Bearer {ISSUED_TOKEN}"
                            "Content-Type: application/x-www-form-urlencoded"
-                          "Accept" "application/json"
-                          ))
-                (paging/cursor-based
-                   :limit-param "limit"
-                   :cursor-param "cursor")
-                (auth/http-basic)
+                          "Accept" "application/json"                 
+                (auth/http-bearer :token {bearertoken} )))
+                (paging/no-pagination")
                 (error-handler
                         (when :status 404 :message "not found" :action fail)
                         (when :status 404 :action skip)
@@ -38,6 +27,7 @@
   (api-docs-url "https://api.7shifts.com/v2/whoami")
   (source
     (http/get :url "/v2/whoami")
+    (extract-path "data")
     (setup-test
       (upon-receiving
         :code 200 :action (pass)
